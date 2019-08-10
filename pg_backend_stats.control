@@ -1,0 +1,5 @@
+# timestamp9 extension
+comment = 'query stats for one backend'
+default_version = '0.1.0'
+module_pathname = '$libdir/pg_stats_backend'
+relocatable = true
