@@ -19,3 +19,7 @@ create type pg_backend_stats as (
 CREATE OR REPLACE FUNCTION pg_backend_stats_last_query() RETURNS setof pg_backend_stats AS
 '$libdir/pg_backend_stats'
 LANGUAGE c STABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION pg_compute_query_id(text) RETURNS bigint AS
+'$libdir/pg_backend_stats'
+LANGUAGE c STABLE STRICT PARALLEL SAFE;
