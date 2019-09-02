@@ -73,7 +73,7 @@ function_call_walker(Node *node, void *context)
 	id_state* state = (id_state*)context;
 
 	if (nodeTag(node) != T_Const && nodeTag(node) != T_Param && nodeTag(node) != T_A_Const && nodeTag(node) != T_ParamRef &&
-			nodeTag(node) != T_Alias)
+			nodeTag(node) != T_Alias && nodeTag(node) != T_TypeCast && nodeTag(node) != T_TypeName)
 		hash_combine(state->id, node->type);
 
 	switch (nodeTag(node))
@@ -391,23 +391,7 @@ function_call_walker(Node *node, void *context)
 		case T_TypeCast:
 			break;
 		case T_TypeName:
-		{
-			TypeName* name = (TypeName*)node;
-
-			ListCell   *lc;
-			Value	   *v;
-
-			foreach(lc, name->names)
-			{
-				v = (Value *) lfirst(lc);
-
-				if (IsA(v, String))
-				{
-					hash_combine(state->id, std::string(v->val.str));
-				}
-			}
-		}
-		break;
+			break;
 		case T_SelectStmt:
 		{
 			SelectStmt* sel = (SelectStmt*)node;
@@ -473,6 +457,9 @@ Datum pg_compute_query_id(PG_FUNCTION_ARGS)
 			{
 				hash_combine(state.id, std::string(ptr));
 			}
+
+			//elog(INFO, "%s", nodeToString(node));
+
 			pfree(tree);
 		}
 		else
@@ -497,9 +484,6 @@ Datum pg_compute_query_id(PG_FUNCTION_ARGS)
 	{
 		return DatumGetInt64(state.id);
 	}
-
-	//elog(INFO, "%s", nodeToString(node));
-
 }
 
 Datum
