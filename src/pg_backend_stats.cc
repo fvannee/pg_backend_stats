@@ -462,18 +462,23 @@ Datum pg_compute_query_id(PG_FUNCTION_ARGS)
 		List* tree = raw_parser(ptr);
 		Node *node = NULL;
 		RawStmt *rstmt;
-		rstmt = (RawStmt *) lfirst(list_head(tree));
-		node = (Node *) rstmt->stmt;
+		if (tree != NULL)
+		{
+			rstmt = (RawStmt *) lfirst(list_head(tree));
+			node = (Node *) rstmt->stmt;
 
-		if (node->type == T_SelectStmt || node->type == T_InsertStmt || node->type == T_DeleteStmt || node->type == T_UpdateStmt)
-			function_call_walker(node, &state);
+			if (node->type == T_SelectStmt || node->type == T_InsertStmt || node->type == T_DeleteStmt || node->type == T_UpdateStmt)
+				function_call_walker(node, &state);
+			else
+			{
+				hash_combine(state.id, std::string(ptr));
+			}
+			pfree(tree);
+		}
 		else
 		{
-			hash_combine(state.id, std::string(ptr));
+			returnNull = true;
 		}
-
-		pfree(tree);
-		pfree(ptr);
 	}
 	PG_CATCH();
 	{
@@ -481,6 +486,8 @@ Datum pg_compute_query_id(PG_FUNCTION_ARGS)
 		FlushErrorState();
 	}
 	PG_END_TRY();
+
+	pfree(ptr);
 
 	if (returnNull)
 	{
