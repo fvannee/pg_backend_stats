@@ -102,10 +102,6 @@ function_call_walker(Node *node, void *context)
 			{
 			}
 			break;
-		case T_ArrayRef:
-			{
-			}
-			break;
 		case T_FuncExpr:
 			{
 
