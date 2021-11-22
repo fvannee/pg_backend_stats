@@ -19,6 +19,9 @@ extern "C" {
 #include "nodes/parsenodes.h"
 }
 
+#define PG14_LT (PG_VERSION_NUM < 140000)
+#define PG14_GE (PG_VERSION_NUM >= 140000)
+
 extern "C" {
 
 PG_MODULE_MAGIC;
@@ -439,7 +442,11 @@ Datum pg_compute_query_id(PG_FUNCTION_ARGS)
 
 	PG_TRY();
 	{
+#if PG14_GE
+		List* tree = raw_parser(ptr, RAW_PARSE_DEFAULT);
+#else
 		List* tree = raw_parser(ptr);
+#endif
 		Node *node = NULL;
 		RawStmt *rstmt;
 		if (tree != NULL)
@@ -631,7 +638,11 @@ pg_backend_ExecutorStart(QueryDesc *queryDesc, int eflags)
 			MemoryContext oldcxt;
 
 			oldcxt = MemoryContextSwitchTo(queryDesc->estate->es_query_cxt);
+#if PG14_GE
+			queryDesc->totaltime = InstrAlloc(1, INSTRUMENT_BUFFERS, false);
+#else
 			queryDesc->totaltime = InstrAlloc(1, INSTRUMENT_BUFFERS);
+#endif
 			MemoryContextSwitchTo(oldcxt);
 		}
 
