@@ -414,6 +414,28 @@ function_call_walker(Node *node, void *context)
 				hash_combine(state->id, sel->all);
 				hash_combine(state->id, sel->op);
 			}
+			if (sel->valuesLists)
+			{
+				// process by ourselves, only care about first element for homogeneous structure
+				List *vals = sel->valuesLists;
+				if (vals->length && function_call_walker((Node *) linitial(vals), context))
+					return true;
+				if (function_call_walker((Node *) sel->sortClause, context))
+					return true;
+				if (function_call_walker(sel->limitOffset, context))
+					return true;
+				if (function_call_walker(sel->limitCount, context))
+					return true;
+				if (function_call_walker((Node *) sel->lockingClause, context))
+					return true;
+				if (function_call_walker((Node *) sel->withClause, context))
+					return true;
+				if (function_call_walker((Node *) sel->larg, context))
+					return true;
+				if (function_call_walker((Node *) sel->rarg, context))
+					return true;
+				return false;
+			}
 		}
 			break;
 		case T_Alias:
