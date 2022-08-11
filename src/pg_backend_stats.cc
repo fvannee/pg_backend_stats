@@ -418,12 +418,8 @@ function_call_walker(Node *node, void *context)
 			{
 				// process by ourselves, only care about first element for homogeneous structure
 				List *vals = sel->valuesLists;
-				if (vals->length)
-				{
-					ListCell *lc = &vals->elements[0];
-					if (function_call_walker((Node *) lfirst(lc), context))
-						return true;
-				}
+				if (vals->length && function_call_walker((Node *) linitial(vals), context))
+					return true;
 				if (function_call_walker((Node *) sel->sortClause, context))
 					return true;
 				if (function_call_walker(sel->limitOffset, context))
@@ -439,11 +435,6 @@ function_call_walker(Node *node, void *context)
 				if (function_call_walker((Node *) sel->rarg, context))
 					return true;
 				return false;
-			}
-			else 
-			{
-				// resort to default tree walker
-				return raw_expression_tree_walker(node, reinterpret_cast<bool(*)(void)>(function_call_walker), context);
 			}
 		}
 			break;
