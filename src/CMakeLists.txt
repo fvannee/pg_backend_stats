@@ -70,8 +70,8 @@ cat_files("pg_backend_stats.sql" ${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_FILE})
 add_custom_target(sqlfile ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${INSTALL_FILE})
 
 set(MOD_FILES
-
-	    )
+  pg_backend_stats--0.1.0--1.0.0.sql
+)
 
 add_custom_target(sqlupdatescripts ALL DEPENDS ${MOD_FILES})
 
