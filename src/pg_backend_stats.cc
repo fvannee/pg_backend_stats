@@ -21,6 +21,7 @@ extern "C" {
 
 #define PG14_LT (PG_VERSION_NUM < 140000)
 #define PG14_GE (PG_VERSION_NUM >= 140000)
+#define PG15_GE (PG_VERSION_NUM >= 150000)
 
 extern "C" {
 
@@ -344,8 +345,13 @@ function_call_walker(Node *node, void *context)
 
 					if (IsA(n, String))
 					{
+#if PG15_GE
+						String *v = (String *) lfirst(c);
+						hash_combine(state->id, std::string(v->sval));
+#else
 						Value	   *v = (Value *) lfirst(c);
 						hash_combine(state->id, std::string(v->val.str));
+#endif
 					}
 					else if (IsA(n, A_Star))
 					{
@@ -372,15 +378,19 @@ function_call_walker(Node *node, void *context)
 				FuncCall *fnc = (FuncCall*)node;
 
 				ListCell   *lc;
-				Value	   *v;
+				Node	   *v;
 
 				foreach(lc, fnc->funcname)
 				{
-					v = (Value *) lfirst(lc);
+					v = (Node *) lfirst(lc);
 
 					if (IsA(v, String))
 					{
-						hash_combine(state->id, std::string(v->val.str));
+#if PG15_GE
+						hash_combine(state->id, std::string(((String *)v)->sval));
+#else
+						hash_combine(state->id, std::string(((Value *)v)->val.str));
+#endif
 					}
 				}
 			}
