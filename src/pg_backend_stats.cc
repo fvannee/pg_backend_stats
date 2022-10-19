@@ -1,4 +1,5 @@
 #include <functional>
+#include <string>
 
 extern "C" {
 #include "postgres.h"
